@@ -9,6 +9,13 @@ trees <- read.csv("trees.csv", header=T)
 #plot trees
 plot(trees$x, trees$y, col="dark green")
 
+#Masuyama's Method
+
+#get a random point
+r <- 37
+
+x1 <- runif(1, -r, 750+r)
+y1 <- runif(1, -r, 750+r)
 
 
 # 1. A couple of examples of the proc.time function
