@@ -9,75 +9,122 @@ trees <- read.csv("trees.csv", header = T)
 #plot trees
 plot(trees$x, trees$y, col = "dark green")
 
+#save the actual basal area of the 750 x 750 forest
+#this value is the same for all methods
 ba_actual <- 311.906
-
-#Masuyama's Method
-#get a random point
-r <- 37
-a <- pi * r ^ 2
-A <- (750 + 2 * r) ^ 2
-pi_i <- a / A
-
 
 ################################################################################
 #
 # Matasuyama's method
 #
 ################################################################################
+#set radius
+r <- 37
+
+#set area of circular sample
+a <- pi * r ^ 2
+
+#set area of the 750 x 750 forest, and include the radius
+A <- (750 + 2 * r) ^ 2
+
+#set the probability that a tree is selected into a random sample (the same for all samples)
+pi_i <- a / A
+
+#run loop 100,000 times
 loop_lim <- 10 ^ 5
-ba_area_estimate <- 0
 
-ba_area_estimate_values <- rep(0,loop_lim)
+#create empty vector to store basal area estimate
+ba_area_estimate_values <- rep(0, loop_lim)
 
+#keep track of time it takes to run loop
 start <- proc.time()
+
 for (i in 1:loop_lim) {
+  
+  #get random points for circle
   x1 <- runif(1,-r, 750 + r)
   y1 <- runif(1,-r, 750 + r)
 
-  trees.sub <-
-    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
-  ba_area_estimate <-
-    ba_area_estimate + (1 / pi_i) * sum(trees.sub$ba) / loop_lim
+  #get the subset of trees that are within that circle
+  trees.sub <- subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
+  
+  #calculate basal area of trees in the circle
   ba_area_estimate_values[i] <- (1 / pi_i) * sum(trees.sub$ba)
 }
-
 total_time <- proc.time() - start
 
+#calculate percentage bias
+ba_area_estimate = sum(ba_area_estimate_values) / loop_lim
 percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
+
+#calculate percentage root mean square error
 rmse <- 100 * sqrt(var(ba_area_estimate_values)) / ba_actual
 
-#printf ... blah blah blah
+#print elapsed time, precentage bias, and percentage rmse
+print(total_time[3])
+print(percent_bias)
+print(rmse)
 
 ################################################################################
 #
 # Measure pi_i method
 #
 ################################################################################
-loop_lim <- 10 ^ 5
-ba_area_estimate <- 0
+#set radius
+r <- 37
 
-ba_area_estimate_values <- rep(0,loop_lim)
-
-start <- proc.time()
+#set area of the 750 x 750 forest
 A <- 750 ^ 2
+
+#run loop 100,000 times
+loop_lim <- 10 ^ 5
+
+#create empty vector to store basal area estimate
+ba_area_estimate_values <- rep(0, loop_lim)
+
+#keep track of time it takes to run loop
+start <- proc.time()
+
 for (i in 1:loop_lim) {
+  
+  #get random points for circle
   x1 <- runif(1, 0, 750)
   y1 <- runif(1, 0, 750)
 
-  ### edit a
-  a <- overlap.area(x1,y1,r)
+  #calculate overlap area
+  a <- overlap.area(x1, y1, r)
+  
+  #set the probability that a tree is selected into a random sample
   pi_i <- a / A
 
-  trees.sub <-
-    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
-  ba_area_estimate <-
-    ba_area_estimate + (1 / pi_i) * sum(trees.sub$ba) / loop_lim
+  #get the subset of trees that are within that circle
+  trees.sub <- subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
+
+  #calculate basal area of trees in the circle
   ba_area_estimate_values[i] <- (1 / pi_i) * sum(trees.sub$ba)
 }
 total_time <- proc.time() - start
 
+#calculate percentage bias
+ba_area_estimate = sum(ba_area_estimate_values) / loop_lim
 percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
+
+#calculate percentage root mean square error
 rmse <- 100 * sqrt(var(ba_area_estimate_values)) / ba_actual
+
+#print elapsed time, precentage bias, and percentage rmse
+print(total_time[3])
+print(percent_bias)
+print(rmse)
+
+################################################################################
+#
+# Repeated Masuyama Method
+#
+################################################################################
+#set radius
+r <- 37
+
 
 ################################################################################
 ################################################################################
