@@ -11,6 +11,19 @@ trees <- read.csv("trees.csv", header = T)
 printf <- function(...)
   cat(sprintf(...))
 
+printStats<-function(listr,timer) {
+  #calculate percentage bias
+  ba_area_estimate = sum(listr) / loop_lim
+  percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
+
+  #calculate percentage root mean square error
+  rmse <- 100 * sqrt(var(listr)) / ba_actual
+
+  #print elapsed time, precentage bias, and percentage rmse
+  printf(
+    "Total Time: %3.3f secs\nbias      : %3.3f percent\nroot mse  : %3.3f",timer[3],percent_bias,rmse
+  )
+}
 #plot trees
 plot(trees$x, trees$y, col = "dark green")
 
@@ -37,24 +50,6 @@ loop_lim <- 10 ^ 5
 #create empty vector to store basal area estimate
 ba_area_estimate_values <- rep(0,loop_lim)
 #keep track of time it takes to run loop
-
-
-start = proc.time()
-for (i in 1:loop_lim) {
-  #get random points for circle
-  x1 <- runif(1,-r, 750 + r)
-  y1 <- runif(1,-r, 750 + r)
-
-  #get the subset of trees that are within that circle
-  trees.sub <-
-    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
-
-  #calculate basal area of trees in the circle
-  ba_area_estimate_values[i] <- (1 / pi_i) * sum(trees.sub$ba)
-}
-total_time <- proc.time() - start
-total_time
-
 parTreeSub <- function(x) {
   x1 <- runif(1,-r, 750 + r)
   y1 <- runif(1,-r, 750 + r)
@@ -66,30 +61,8 @@ parTreeSub <- function(x) {
 start = proc.time()
 naive_ba_est <- unlist(mcMap(parTreeSub, 1:loop_lim))
 total_time2 <- proc.time() - start
-total_time2
 
-#calculate percentage bias
-ba_area_estimate = sum(ba_area_estimate_values) / loop_lim
-percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
-
-#calculate percentage root mean square error
-rmse <- 100 * sqrt(var(ba_area_estimate_values)) / ba_actual
-
-#print elapsed time, precentage bias, and percentage rmse
-printf(
-  "Total Time: %3.3f secs\nbias      : %3.3f percent\nroot mse  : %3.3f",total_time[3],percent_bias,rmse
-)
-
-ba_area_estimate = sum(naive_ba_est) / loop_lim
-percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
-
-#calculate percentage root mean square error
-rmse <- 100 * sqrt(var(naive_ba_est)) / ba_actual
-
-#print elapsed time, precentage bias, and percentage rmse
-printf(
-  "Total Time: %3.3f secs\nbias      : %3.3f percent\nroot mse  : %3.3f",total_time2[3],percent_bias,rmse
-)
+printStats(naive_ba_est,total_time2)
 
 ################################################################################
 #
@@ -109,8 +82,6 @@ loop_lim <- 10 ^ 5
 ba_area_estimate_values <- rep(0, loop_lim)
 
 #keep track of time it takes to run loop
-
-
 parTreePiI <- function(x) {
   #get random points for circle
   x1 <- runif(1, 0, 750)
@@ -130,44 +101,11 @@ parTreePiI <- function(x) {
   return((1 / pi_i) * sum(trees.sub$ba))
 }
 
-start <- proc.time()
-for (i in 1:loop_lim) {
-  #get random points for circle
-  x1 <- runif(1, 0, 750)
-  y1 <- runif(1, 0, 750)
-
-  #calculate overlap area
-  a <- overlap.area(x1, y1, r)
-
-  #set the probability that a tree is selected into a random sample
-  pi_i <- a / A
-
-  #get the subset of trees that are within that circle
-  trees.sub <-
-    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
-
-  #calculate basal area of trees in the circle
-  ba_area_estimate_values[i] <- (1 / pi_i) * sum(trees.sub$ba)
-}
-total_time <- proc.time() - start
-
-#calculate percentage bias
-ba_area_estimate = sum(ba_area_estimate_values) / loop_lim
-percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
-
-#calculate percentage root mean square error
-rmse <- 100 * sqrt(var(ba_area_estimate_values)) / ba_actual
-
-
 start = proc.time()
 pi_i_ba_est <- unlist(mcMap(parTreePiI, 1:loop_lim))
 total_time2 <- proc.time() - start
-total_time2
 
-#print elapsed time, precentage bias, and percentage rmse
-print(total_time[3])
-print(percent_bias)
-print(rmse)
+printStats(pi_i_ba_est,total_time2)
 
 ################################################################################
 #
@@ -209,7 +147,7 @@ repeated_masuyama_ba_est <- unlist(mcMap(repeatedMat, 1:loop_lim))/pi_i
 total_time2 <- proc.time() - start
 total_time2
 
-mean(ba_area_estimate_values_2)
+printStats(repeated_masuyama_ba_est,total_time2)
 
 ################################################################################
 ################################################################################
