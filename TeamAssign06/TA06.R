@@ -2,9 +2,14 @@
 #Team 8
 #kms6bn, mer3ef, doc2g, mv5vf
 
+library(parallel)
+
 #load data
 setwd("~/Git/STAT_6021_Project/TeamAssign06")
 trees <- read.csv("trees.csv", header = T)
+
+printf <- function(...)
+  cat(sprintf(...))
 
 #plot trees
 plot(trees$x, trees$y, col = "dark green")
@@ -18,13 +23,9 @@ ba_actual <- 311.906
 # Matasuyama's method
 #
 ################################################################################
-#set radius
+# set fixed values
 r <- 37
-
-#set area of circular sample
 a <- pi * r ^ 2
-
-#set area of the 750 x 750 forest, and include the radius
 A <- (750 + 2 * r) ^ 2
 
 #set the probability that a tree is selected into a random sample (the same for all samples)
@@ -34,24 +35,38 @@ pi_i <- a / A
 loop_lim <- 10 ^ 5
 
 #create empty vector to store basal area estimate
-ba_area_estimate_values <- rep(0, loop_lim)
-
+ba_area_estimate_values <- rep(0,loop_lim)
 #keep track of time it takes to run loop
-start <- proc.time()
 
+
+start = proc.time()
 for (i in 1:loop_lim) {
-  
   #get random points for circle
   x1 <- runif(1,-r, 750 + r)
   y1 <- runif(1,-r, 750 + r)
 
   #get the subset of trees that are within that circle
-  trees.sub <- subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
-  
+  trees.sub <-
+    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
+
   #calculate basal area of trees in the circle
   ba_area_estimate_values[i] <- (1 / pi_i) * sum(trees.sub$ba)
 }
 total_time <- proc.time() - start
+total_time
+
+parTreeSub <- function(x) {
+  x1 <- runif(1,-r, 750 + r)
+  y1 <- runif(1,-r, 750 + r)
+  subtrees <-
+    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)$ba
+  return(sum(subtrees) / pi_i)
+}
+
+start = proc.time()
+naive_ba_est <- unlist(mcMap(parTreeSub, 1:loop_lim))
+total_time2 <- proc.time() - start
+total_time2
 
 #calculate percentage bias
 ba_area_estimate = sum(ba_area_estimate_values) / loop_lim
@@ -61,9 +76,20 @@ percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
 rmse <- 100 * sqrt(var(ba_area_estimate_values)) / ba_actual
 
 #print elapsed time, precentage bias, and percentage rmse
-print(total_time[3])
-print(percent_bias)
-print(rmse)
+printf(
+  "Total Time: %3.3f secs\nbias      : %3.3f percent\nroot mse  : %3.3f",total_time[3],percent_bias,rmse
+)
+
+ba_area_estimate = sum(naive_ba_est) / loop_lim
+percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
+
+#calculate percentage root mean square error
+rmse <- 100 * sqrt(var(naive_ba_est)) / ba_actual
+
+#print elapsed time, precentage bias, and percentage rmse
+printf(
+  "Total Time: %3.3f secs\nbias      : %3.3f percent\nroot mse  : %3.3f",total_time2[3],percent_bias,rmse
+)
 
 ################################################################################
 #
@@ -83,22 +109,42 @@ loop_lim <- 10 ^ 5
 ba_area_estimate_values <- rep(0, loop_lim)
 
 #keep track of time it takes to run loop
-start <- proc.time()
 
-for (i in 1:loop_lim) {
-  
+
+parTreePiI <- function(x) {
   #get random points for circle
   x1 <- runif(1, 0, 750)
   y1 <- runif(1, 0, 750)
 
   #calculate overlap area
   a <- overlap.area(x1, y1, r)
-  
+
   #set the probability that a tree is selected into a random sample
   pi_i <- a / A
 
   #get the subset of trees that are within that circle
-  trees.sub <- subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
+  trees.sub <-
+    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
+
+  #calculate basal area of trees in the circle
+  return((1 / pi_i) * sum(trees.sub$ba))
+}
+
+start <- proc.time()
+for (i in 1:loop_lim) {
+  #get random points for circle
+  x1 <- runif(1, 0, 750)
+  y1 <- runif(1, 0, 750)
+
+  #calculate overlap area
+  a <- overlap.area(x1, y1, r)
+
+  #set the probability that a tree is selected into a random sample
+  pi_i <- a / A
+
+  #get the subset of trees that are within that circle
+  trees.sub <-
+    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= 37 ^ 2)
 
   #calculate basal area of trees in the circle
   ba_area_estimate_values[i] <- (1 / pi_i) * sum(trees.sub$ba)
@@ -112,6 +158,12 @@ percent_bias <- 100 * (ba_area_estimate - ba_actual) / ba_actual
 #calculate percentage root mean square error
 rmse <- 100 * sqrt(var(ba_area_estimate_values)) / ba_actual
 
+
+start = proc.time()
+pi_i_ba_est <- unlist(mcMap(parTreePiI, 1:loop_lim))
+total_time2 <- proc.time() - start
+total_time2
+
 #print elapsed time, precentage bias, and percentage rmse
 print(total_time[3])
 print(percent_bias)
@@ -123,8 +175,41 @@ print(rmse)
 #
 ################################################################################
 #set radius
-r <- 37
+repeatedMat <- function(x, radius = 37) {
+  x1 <- runif(1, 0-radius, 750+radius)
+  y1 <- runif(1, 0-radius, 750+radius)
 
+  #get the subset of trees that are within that circle
+  trees.sub <-
+    subset(trees,(trees$x - x1) ^ 2 + (trees$y - y1) ^ 2 <= radius ^ 2)
+
+  #calculate overlap area
+  a <- overlap.area(x1, y1, radius)
+  printf("sub area : %f\n",a)
+  # if the sub area isn't the whole area
+  if (a != pi * radius ^ 2) {
+    radius_prime = sqrt( (pi*radius ^ 2 - a)/pi)
+    printf("RadiusPrime : %f\n",radius_prime)
+    return( sum(trees.sub$ba) + repeatedMat(0,radius = radius_prime ))
+  }
+
+  return(sum(trees.sub$ba))
+}
+
+start = proc.time()
+# set fixed values
+r <- 37
+a <- pi * r ^ 2
+A <- (750 + 2 * r) ^ 2
+
+#set the probability that a tree is selected into a random sample (the same for all samples)
+pi_i <- a / A
+
+repeated_masuyama_ba_est <- unlist(mcMap(repeatedMat, 1:loop_lim))/pi_i
+total_time2 <- proc.time() - start
+total_time2
+
+mean(ba_area_estimate_values_2)
 
 ################################################################################
 ################################################################################
@@ -160,7 +245,8 @@ overlap.area <- function(xt,yt,rl) {
         area <- (pi - acos(dx / rl)) * rl ^ 2 + dx * sqrt(rl ^ 2 - dx ^ 2)
       } else {
         ndx <- -dx
-        area <- acos(ndx / rl) * rl ^ 2 - ndx * sqrt(rl ^ 2 - ndx ^ 2)
+        area <-
+          acos(ndx / rl) * rl ^ 2 - ndx * sqrt(rl ^ 2 - ndx ^ 2)
       }
     }
     if (dx >= rl & dy < rl) {
@@ -168,7 +254,8 @@ overlap.area <- function(xt,yt,rl) {
         area <- (pi - acos(dy / rl)) * rl ^ 2 + dy * sqrt(rl ^ 2 - dy ^ 2)
       } else {
         ndy <- -dy
-        area <- acos(ndy / rl) * rl ^ 2 - ndy * sqrt(rl ^ 2 - ndy ^ 2)
+        area <-
+          acos(ndy / rl) * rl ^ 2 - ndy * sqrt(rl ^ 2 - ndy ^ 2)
       }
     }
     if (dx < rl & dy < rl & (dx ^ 2 + dy ^ 2) >= rl ^ 2) {
@@ -179,11 +266,13 @@ overlap.area <- function(xt,yt,rl) {
       }
       if (dx >= 0 & dy < 0) {
         ndy <- -dy
-        area <- acos(ndy / rl) * rl ^ 2 - ndy * sqrt(rl ^ 2 - ndy ^ 2)
+        area <-
+          acos(ndy / rl) * rl ^ 2 - ndy * sqrt(rl ^ 2 - ndy ^ 2)
       }
       if (dx < 0 & dy >= 0) {
         ndx <- -dx
-        area <- acos(ndx / rl) * rl ^ 2 - ndx * sqrt(rl ^ 2 - ndx ^ 2)
+        area <-
+          acos(ndx / rl) * rl ^ 2 - ndx * sqrt(rl ^ 2 - ndx ^ 2)
       }
       if (dx < 0 & dy < 0) {
         area <- 0
