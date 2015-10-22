@@ -22,7 +22,6 @@ summary(lm1)
 
 #create a partial model
 lm2 <- lm(Grade ~ sex + age + famsize + Pstatus + Medu + 
-            
             Fedu + Mjob + Fjob + reason + guardian + traveltime + studytime + 
             freetime + Walc, data=train)
 summary(lm2)
@@ -37,7 +36,7 @@ anova(lm2, lm1, test="LRT")
 step <- stepAIC(lm2, direction="backward")
 step$anova
 
-#cross validation (wont work with age  or Fedu variable)
+#cross validation (wont work with age or Fedu variable)
 cvFit(lm, Grade ~ sex + famsize + Pstatus + Medu + 
         Mjob + Fjob + reason + guardian + traveltime + studytime + 
         freetime + Walc, data = train, K = 5, seed = 10)
