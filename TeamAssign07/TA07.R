@@ -36,16 +36,19 @@ anova(lm2, lm1, test="LRT")
 step <- stepAIC(lm2, direction="backward")
 step$anova
 
-#regsubsets
-leaps<-regsubsets(Grade ~ sex + age + famsize + Pstatus + Medu + 
-                    Fedu + Mjob + Fjob + reason + guardian + traveltime + studytime + 
-                    freetime + Walc, data=train)
-summary(leaps)
-
 #cross validation (wont work with age  or Fedu variable)
 cvFit(lm, Grade ~ sex + famsize + Pstatus + Medu + 
         Mjob + Fjob + reason + guardian + traveltime + studytime + 
         freetime + Walc, data = train, K = 5, seed = 10)
+
+#residuals
+residuals <- resid(lm2)
+plot(residuals)
+abline(0,0)
+
+#there are an issue issues with normality (goes away with log(Grade))
+qqnorm(residuals)
+qqline(residuals)
 
 # Predictions
 predvect <- as.vector(predict(lm2, newdata=test))
