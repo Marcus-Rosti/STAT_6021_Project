@@ -22,6 +22,7 @@ summary(lm1)
 
 #create a partial model
 lm2 <- lm(Grade ~ sex + age + famsize + Pstatus + Medu + 
+            
             Fedu + Mjob + Fjob + reason + guardian + traveltime + studytime + 
             freetime + Walc, data=train)
 summary(lm2)
