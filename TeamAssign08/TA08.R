@@ -28,23 +28,28 @@ summary(lm1)
 reg <- regsubsets(motor_UPDRS ~ . -subject., data=p)
 summary(reg)
 
-lm2 <- lm(motor_UPDRS ~ age + sex + test_time + Jitter.Abs. + 
-            Jitter.PPQ5 + Jitter.DDP + Shimmer.dB. + 
-            Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR + RPDE + 
+lm2 <- lm(motor_UPDRS ~ age + sex + test_time + Jitter.Abs. + NHR +
+            Jitter.PPQ5 + Jitter.DDP + Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR + 
             DFA + PPE, data=p)
 summary(lm2)
 
 #removed Shimmer because it had the highest VIF value
 vif(lm2)
 
-#p value shows that smaller model is close to the larger model in predictive power (0.01)
+#p value shows that smaller model is close to the larger model in predictive power (0.04)
 anova(lm2, lm1)
 
 #   (b) Repeat part (a), this time with transformations allowed.
+lm3 <- lm(log(motor_UPDRS) ~ age + sex + test_time + Jitter.Abs. + NHR +
+            Jitter.PPQ5 + Jitter.DDP + Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR + 
+            DFA + PPE, data=p)
+summary(lm3)
+
 
 ## Question 2: This problem requires the data in the files "credit-train.csv" and
 ##    "credit-predict.csv".  Information about the data is contained in "credit.txt".
 c <- read.csv("credit-train.csv", header = TRUE, na.strings=c("?"))
+cPred <- read.csv("credit-predict.csv", header = TRUE, na.strings=c("?")) 
 
 #
 #   (a) Develop a logistic regression model based on the "train" data to predict
