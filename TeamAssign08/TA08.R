@@ -25,8 +25,20 @@ p$sex <- as.factor(p$sex)
 lm1 <- lm(motor_UPDRS ~ . -subject., data=p)
 summary(lm1)
 
-lm2 <- lm(motor_UPDRS ~ test_time + NHR, data=p)
+reg <- regsubsets(motor_UPDRS ~ . -subject., data=p)
+summary(reg)
+
+lm2 <- lm(motor_UPDRS ~ age + sex + test_time + Jitter.Abs. + 
+            Jitter.PPQ5 + Jitter.DDP + Shimmer.dB. + 
+            Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR + RPDE + 
+            DFA + PPE, data=p)
 summary(lm2)
+
+#removed Shimmer because it had the highest VIF value
+vif(lm2)
+
+#p value shows that smaller model is close to the larger model in predictive power (0.01)
+anova(lm2, lm1)
 
 #   (b) Repeat part (a), this time with transformations allowed.
 
