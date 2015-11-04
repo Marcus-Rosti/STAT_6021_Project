@@ -22,10 +22,10 @@ p$subject. <- as.factor(p$subject.)
 p$sex <- as.factor(p$sex)
 
 #create a model with all values
-lm1 <- lm(motor_UPDRS ~ ., data=p)
+lm1 <- lm(motor_UPDRS ~ . -subject., data=p)
 summary(lm1)
 
-lm2 <- lm(motor_UPDRS ~ subject. + age + test_time + NHR + HNR + DFA + PPE, data=p)
+lm2 <- lm(motor_UPDRS ~ test_time + NHR, data=p)
 summary(lm2)
 
 #   (b) Repeat part (a), this time with transformations allowed.
