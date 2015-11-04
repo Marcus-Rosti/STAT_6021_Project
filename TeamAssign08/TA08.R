@@ -40,9 +40,10 @@ vif(lm2)
 anova(lm2, lm1)
 
 #   (b) Repeat part (a), this time with transformations allowed.
-lm3 <- lm(log(motor_UPDRS) ~ age + sex + test_time + Jitter.Abs. + NHR +
+lm3 <- lm(motor_UPDRS ~ age + sex + test_time + Jitter.Abs. + NHR +
             Jitter.PPQ5 + Jitter.DDP + Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR + 
             DFA + PPE, data=p)
+plot(p$age, p$motor_UPDRS)
 summary(lm3)
 
 
