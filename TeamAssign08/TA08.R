@@ -46,6 +46,9 @@ lm3 <- lm(log(motor_UPDRS) ~ age + sex + test_time + Jitter.Abs. + NHR +
 summary(lm3)
 
 
+lm3 <- lm(motor_UPDRS ~ poly(age,5) + poly(Jitter.Abs.,2) + test_time + poly(HNR,2) + DFA + poly(PPE,4), data=p)
+summary(lm3)
+
 ## Question 2: This problem requires the data in the files "credit-train.csv" and
 ##    "credit-predict.csv".  Information about the data is contained in "credit.txt".
 c <- read.csv("credit-train.csv", header = TRUE, na.strings=c("?"))
