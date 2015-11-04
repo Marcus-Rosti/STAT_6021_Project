@@ -1,0 +1,30 @@
+
+## Team Assignment 8
+#Team 8
+#kms6bn, mer3ef, doc2g, mv5vf
+#
+#  Please submit one set of answers per team. All code should be submitted
+#  in an annotated R file, with narrative and models in a PDF document.
+
+## Question 1: This problem requires the data in the file "parkinsons.csv".  
+##    Information about this data set is in "parkinsons.txt".
+#   
+#   (a) Find the "best" linear model with "motor_UPDRS" as the response, using
+#       only variable selection.  (No transformations.)  Clearly state your model 
+#       and give a brief explanation for your model choice.
+#   (b) Repeat part (a), this time with transformations allowed.
+
+## Question 2: This problem requires the data in the files "credit-train.csv" and
+##    "credit-predict.csv".  Information about the data is contained in "credit.txt".
+#
+#   (a) Develop a logistic regression model based on the "train" data to predict
+#       the value of A16 (class attribute) from the variables A1-A15.  Note
+#       that there are a few missing values!
+#   (b) Predict the class attribute for each observation in the "predict" data,
+#       then export your predictions using the code below.
+
+write.table(predvect, file = "TA08preds.csv", row.names=F, col.names=F, sep=",")
+
+## Your submission should consist of "TA08.R" (all R code), "TA08.pdf" (description
+## of the models developed for Question 1), and "TA08preds.csv" (predicted class
+## attribute values for the prediction observation data in Question 2).
