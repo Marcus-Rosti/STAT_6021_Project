@@ -5,9 +5,12 @@
 #
 #  Please submit one set of answers per team. All code should be submitted
 #  in an annotated R file, with narrative and models in a PDF document.
+setwd("~/Git/STAT_6021_Project/TeamAssign08")
 
 ## Question 1: This problem requires the data in the file "parkinsons.csv".  
 ##    Information about this data set is in "parkinsons.txt".
+p <- read.csv("parkinsons.csv", header = TRUE)
+
 #   
 #   (a) Find the "best" linear model with "motor_UPDRS" as the response, using
 #       only variable selection.  (No transformations.)  Clearly state your model 
@@ -16,6 +19,8 @@
 
 ## Question 2: This problem requires the data in the files "credit-train.csv" and
 ##    "credit-predict.csv".  Information about the data is contained in "credit.txt".
+c <- read.csv("credit-train.csv", header = TRUE, na.strings=c("?"))
+
 #
 #   (a) Develop a logistic regression model based on the "train" data to predict
 #       the value of A16 (class attribute) from the variables A1-A15.  Note
