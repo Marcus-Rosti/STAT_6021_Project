@@ -12,6 +12,9 @@ year13 <- read.csv("MERGED2013_PP.csv", na.strings=c("NULL"))
 year13 <- subset(year13, year13$CONTROL != 3)
 year13$CONTROL <- as.factor(year13$CONTROL)
 
+#keep only colleges which their predominant degree is a bachelor's degree
+year13 <- year13[year13$PREDDEG == 3,]
+
 #remove columns with more than 500 na values, but keet logitude and latitude
 nafind <- function(x){sum(is.na(x))}
 keep <- c("LONGITUDE", "LATITUDE", "DEBT_MDN")
