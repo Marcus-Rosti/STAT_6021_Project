@@ -40,14 +40,7 @@ vif(lm2)
 anova(lm2, lm1)
 
 #   (b) Repeat part (a), this time with transformations allowed.
-lm3 <- lm(motor_UPDRS ~ age + sex + test_time + Jitter.Abs. + NHR +
-            Jitter.PPQ5 + Jitter.DDP + Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR + 
-            DFA + PPE, data=p)
-plot(p$age, p$motor_UPDRS)
-summary(lm3)
-
-
-lm3 <- lm(motor_UPDRS ~ poly(age,5) + poly(Jitter.Abs.,2) + test_time + poly(HNR,2) + DFA + poly(PPE,4), data=p)
+lm3 <- lm(log(motor_UPDRS) ~ poly(age,5) + poly(Jitter.Abs.,2) + test_time + poly(HNR,2) + DFA + poly(PPE,3), data=p)
 summary(lm3)
 
 ## Question 2: This problem requires the data in the files "credit-train.csv" and
@@ -59,10 +52,24 @@ cPred <- read.csv("credit-predict.csv", header = TRUE, na.strings=c("?"))
 #   (a) Develop a logistic regression model based on the "train" data to predict
 #       the value of A16 (class attribute) from the variables A1-A15.  Note
 #       that there are a few missing values!
+c$A16 <- as.factor(c$A16)
+
+#make model with all variables (except for A7 which results in fitted probabilities numerically 0 or 1 occurred error)
+lm1 <- glm(A16 ~ . -A7, data=c, na.action=na.omit, family="binomial")
+summary(lm1)
+
+lm2 <- glm(A16 ~ A6 + A9 + A14, data=c, na.action=na.omit, family="binomial")
+summary(lm2)
+
 #   (b) Predict the class attribute for each observation in the "predict" data,
 #       then export your predictions using the code below.
 
-write.table(predvect, file = "TA08preds.csv", row.names=F, col.names=F, sep=",")
+mypreds <- predict(lm2, newdata=cPred, type="response")
+
+preds <- rep(0,nrow(cPred))  # Initialize all to success=0 (pessimistic)
+preds[mypreds >= 0.5] <- 1 # Change those with prob >= .5 to 1
+
+write.table(preds, file = "TA08preds.csv", row.names=F, col.names=F, sep=",")
 
 ## Your submission should consist of "TA08.R" (all R code), "TA08.pdf" (description
 ## of the models developed for Question 1), and "TA08preds.csv" (predicted class
