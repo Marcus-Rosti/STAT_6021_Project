@@ -5,6 +5,7 @@
 
 library(leaps)
 library(fmsb)
+library(glmnet)
 
 #read in data - set NULL as NA
 year13 <- read.csv("MERGED2013_PP.csv", na.strings=c("NULL", "PrivacySuppressed"))
@@ -169,8 +170,16 @@ null <- lm(y_debt ~ 1, data = year13, na.action = na.exclude)
 full <- lm(y_debt ~ ., data = year13, na.action = na.exclude)
 step2 <- step(null, scope = list(lower = null, upper = full), direction = "forward", trace = T)
 
-# try lasso
+#############################
+# RIDGE, LASSO, ELASTIC NET #
+#############################
+features_matrix <- as.matrix(year13_features[1:377])
+# NA Values don't work in glmnet. For now I made them -1, but will need case-by-case review
+features_matrix[is.na(features_matrix)] <- -1
 
+fit.lasso <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=1)
+fit.ridge <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=0)
+fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
 
 
 # Katherine's section
