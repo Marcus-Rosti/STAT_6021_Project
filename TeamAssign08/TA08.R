@@ -79,6 +79,9 @@ table(preds,c.valid$A16)
 #   (b) Predict the class attribute for each observation in the "predict" data,
 #       then export your predictions using the code below.
 
+#make model with all data
+lm2 <- glm(A16 ~ A8*A14 + A6 + A9 + A11, data=na.omit(c), family="binomial")
+
 mypreds <- predict(lm2, newdata=cPred, type="response")
 
 preds <- rep(0,nrow(cPred))  # Initialize all to success=0 (pessimistic)
