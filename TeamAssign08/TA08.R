@@ -62,19 +62,19 @@ c.train <- c[sub,]     # Select subset for cross-validation
 c.valid <- c[-sub,]
 
 #make model with all variables (except for A7 which results in fitted probabilities numerically 0 or 1 occurred error)
-#lm1 <- glm(A16 ~ . -A7, data=c.train, na.action=na.omit, family="binomial")
-#summary(lm1)
+lm1 <- glm(A16 ~ . -A7 -A1, data=na.omit(c.train), family="binomial")
+summary(lm1)
 
-lm2 <- glm(A16 ~ A6 + A9 + A11 + A14, data=na.omit(c.train), family="binomial")
+lm2 <- glm(A16 ~ A8*A14 + A6 + A9 + A11, data=na.omit(c.train), family="binomial")
 summary(lm2)
 
 # test on validation set
-probs<-as.vector(predict(lm2, newdata=c.valid, type="response"))
+probs <- as.vector(predict(lm2, newdata=c.valid, type="response"))
 preds <- rep(0,nrow(c.valid))  # Initialize prediction vector
 preds[probs>0.5] <- 1 # p>0.5 -> 1
 preds
 table(preds,c.valid$A16)
-(52+33)/nrow(c.valid)  #around 85% correct
+(53+34)/nrow(c.valid)  #around 87% correct
 
 #   (b) Predict the class attribute for each observation in the "predict" data,
 #       then export your predictions using the code below.
