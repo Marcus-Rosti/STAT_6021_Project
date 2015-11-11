@@ -4,7 +4,6 @@
 library(leaps)
 
 #read in data - set NULL as NA
-setwd("~/Documents/MSDS/Stat6021")
 year13 <- read.csv("MERGED2013_PP.csv", na.strings=c("NULL"))
 
 #remove private for-profit colleges (3)
