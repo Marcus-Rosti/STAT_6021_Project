@@ -7,6 +7,7 @@ library(MASS)
 library(car)
 library(cvTools)
 library(leaps)
+library(mice) #multiple imputation
 
 setwd("~/Git/STAT_6021_Project/TeamAssign08")
 
@@ -54,12 +55,35 @@ cPred <- read.csv("credit-predict.csv", header = TRUE, na.strings=c("?"))
 #       that there are a few missing values!
 c$A16 <- as.factor(c$A16)
 
+
+# Let's subset to cross validate
+sub <- sample(1:nrow(c),size=nrow(c)*(3/4))
+c.train <- c[sub,]     # Select subset for cross-validation
+c.valid <- c[-sub,]
+
+#impute missing values
+c.imp <- mice(c, m=10, maxit=25)
+c.train.imp <- mice(c.train, m=10, maxit=25)
+
 #make model with all variables (except for A7 which results in fitted probabilities numerically 0 or 1 occurred error)
-lm1 <- glm(A16 ~ . -A7, data=c, na.action=na.omit, family="binomial")
+lm1 <- glm(A16 ~ . -A7, data=c.train, na.action=na.omit, family="binomial")
 summary(lm1)
 
-lm2 <- glm(A16 ~ A6 + A9 + A14, data=c, na.action=na.omit, family="binomial")
+lm2 <- glm(A16 ~ A6 + A9 + A14, data=c.train, na.action=na.omit, family="binomial")
 summary(lm2)
+
+#imputed version
+lm2.imp <- with(data=c.train.imp, exp=glm(A16 ~ A6 + A9 + A14, family="binomial"))
+summary(pool(lm2.imp))
+lm2.imp.pool <- pool(lm2.imp)
+
+# test on validation set
+probs<-as.vector(predict(lm2, newdata=c.valid, type="response"))
+preds <- rep(0,nrow(c.valid))  # Initialize prediction vector
+preds[probs>0.5] <- 1 # p>0.5 -> 1
+preds
+table(preds,c.valid$A16)
+(49+33)/nrow(c.valid)  #around 82% correct
 
 #   (b) Predict the class attribute for each observation in the "predict" data,
 #       then export your predictions using the code below.
