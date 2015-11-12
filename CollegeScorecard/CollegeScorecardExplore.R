@@ -44,7 +44,7 @@ na_debt <- which(is.na(year13clean$DEBT_MDN))
 year13clean <- year13clean[-na_debt, ]
 
 # remove & save ID columns
-info <- year13clean[, c(1:10)]
+info <- year13clean[, c(1:10)]z
 year13clean <- year13clean[, c(-1:-10)]
 
 # remove & save y variables - what is our other y variable?
@@ -92,9 +92,9 @@ year13_features <- year13_features[,!(colnames(year13_features) %in% constants)]
 
 # Test for multicollinearity
 vif_func<-function(in_frame,thresh=10,trace=T,...){
-  
+
   if(class(in_frame) != 'data.frame') in_frame<-data.frame(in_frame)
-  
+
   #get initial vif value for all comparisons of variables
   vif_init<-NULL
   var_names <- names(in_frame)
@@ -105,7 +105,7 @@ vif_func<-function(in_frame,thresh=10,trace=T,...){
     vif_init<-rbind(vif_init, c(val, VIF(lm(form_in, data = in_frame, ...))))
   }
   vif_max<-max(as.numeric(vif_init[,2]))
-  
+
   if(vif_max < thresh){
     if(trace==T){ #print output of each iteration
       prmatrix(vif_init,collab=c('var','vif'),rowlab=rep('',nrow(vif_init)),quote=F)
@@ -115,15 +115,15 @@ vif_func<-function(in_frame,thresh=10,trace=T,...){
     return(var_names)
   }
   else{
-    
+
     in_dat<-in_frame
-    
+
     #backwards selection of explanatory variables, stops when all VIF values are below 'thresh'
     while(vif_max >= thresh){
-      
+
       vif_vals<-NULL
       var_names <- names(in_dat)
-      
+
       for(val in var_names){
         regressors <- var_names[-which(var_names == val)]
         form <- paste(regressors, collapse = '+')
@@ -132,26 +132,26 @@ vif_func<-function(in_frame,thresh=10,trace=T,...){
         vif_vals<-rbind(vif_vals,c(val,vif_add))
       }
       max_row<-which(vif_vals[,2] == max(as.numeric(vif_vals[,2])))[1]
-      
+
       vif_max<-as.numeric(vif_vals[max_row,2])
-      
+
       if(vif_max<thresh) break
-      
+
       if(trace==T){ #print output of each iteration
         prmatrix(vif_vals,collab=c('var','vif'),rowlab=rep('',nrow(vif_vals)),quote=F)
         cat('\n')
         cat('removed: ',vif_vals[max_row,1],vif_max,'\n\n')
         flush.console()
       }
-      
+
       in_dat<-in_dat[,!names(in_dat) %in% vif_vals[max_row,1]]
-      
+
     }
-    
+
     return(names(in_dat))
-    
+
   }
-  
+
 }
 
 #vif <- vif_func(year13_features, thresh = 100, trace = T)
@@ -187,7 +187,7 @@ fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
 # uniquevalues <- lapply(year13clean, function(x) length(unique(x[!is.na(x)])))
 # uniquevalues <- uniquevalues[uniquevalues <= 12]
 # uniquevalues <- names(uniquevalues)
-# 
+#
 # for (i in uniquevalues) {
 #   year13clean[[i]] <- as.factor(year13clean[[i]])
 # }

@@ -11,13 +11,13 @@ library(mice) #multiple imputation
 
 setwd("~/Git/STAT_6021_Project/TeamAssign08")
 
-## Question 1: This problem requires the data in the file "parkinsons.csv".  
+## Question 1: This problem requires the data in the file "parkinsons.csv".
 ##    Information about this data set is in "parkinsons.txt".
 p <- read.csv("parkinsons.csv", header = TRUE)
 
-#   
+#
 #   (a) Find the "best" linear model with "motor_UPDRS" as the response, using
-#       only variable selection.  (No transformations.)  Clearly state your model 
+#       only variable selection.  (No transformations.)  Clearly state your model
 #       and give a brief explanation for your model choice.
 p$subject. <- as.factor(p$subject.)
 p$sex <- as.factor(p$sex)
@@ -30,7 +30,7 @@ reg <- regsubsets(motor_UPDRS ~ . -subject., data=p)
 summary(reg)
 
 lm2 <- lm(motor_UPDRS ~ age + sex + test_time + Jitter.Abs. + NHR +
-            Jitter.PPQ5 + Jitter.DDP + Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR + 
+            Jitter.PPQ5 + Jitter.DDP + Shimmer.APQ3 + Shimmer.APQ5 + Shimmer.APQ11 + HNR +
             DFA + PPE, data=p)
 summary(lm2)
 
@@ -41,13 +41,17 @@ vif(lm2)
 anova(lm2, lm1)
 
 #   (b) Repeat part (a), this time with transformations allowed.
-lm3 <- lm(log(motor_UPDRS) ~ poly(age,5) + poly(Jitter.Abs.,2) + test_time + poly(HNR,2) + DFA + poly(PPE,3), data=p)
+lm3 <- lm(motor_UPDRS ~ poly(age,13) + test_time + Jitter.Abs. +
+            Jitter.PPQ5 + Jitter.DDP + Shimmer.APQ5 +
+            Shimmer.APQ11 + HNR + DFA + poly(PPE,7), data=p)
+
+cvFit(lm3, data = p, K = 10, seed = 1, y = p$motor_UPDRS)
 summary(lm3)
 
 ## Question 2: This problem requires the data in the files "credit-train.csv" and
 ##    "credit-predict.csv".  Information about the data is contained in "credit.txt".
 c <- read.csv("credit-train.csv", header = TRUE, na.strings=c("?"))
-cPred <- read.csv("credit-predict.csv", header = TRUE, na.strings=c("?")) 
+cPred <- read.csv("credit-predict.csv", header = TRUE, na.strings=c("?"))
 
 #
 #   (a) Develop a logistic regression model based on the "train" data to predict
