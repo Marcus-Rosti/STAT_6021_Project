@@ -8,7 +8,6 @@ library(car)
 library(cvTools)
 library(leaps)
 library(mice) #multiple imputation
-
 setwd("~/Git/STAT_6021_Project/TeamAssign08")
 
 ## Question 1: This problem requires the data in the file "parkinsons.csv".
