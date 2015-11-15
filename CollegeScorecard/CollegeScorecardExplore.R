@@ -180,23 +180,3 @@ features_matrix[is.na(features_matrix)] <- -1
 fit.lasso <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=1)
 fit.ridge <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=0)
 fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
-
-
-# Katherine's section
-# # make categorical columns factors
-# uniquevalues <- lapply(year13clean, function(x) length(unique(x[!is.na(x)])))
-# uniquevalues <- uniquevalues[uniquevalues <= 12]
-# uniquevalues <- names(uniquevalues)
-#
-# for (i in uniquevalues) {
-#   year13clean[[i]] <- as.factor(year13clean[[i]])
-# }
-
-# make model, median debt is response
-year13clean$DEBT_MDN <- as.numeric(year13clean$DEBT_MDN)
-
-reg <- regsubsets(DEBT_MDN ~ ., data=year13clean[,c(8:307)])
-
-lm1 <- lm(DEBT_MDN ~ ., na.action=na.exclude, data=year13clean[,c(9:12, 17, 25:26, 301)])
-summary(lm1)
-
