@@ -6,6 +6,7 @@
 library(leaps)
 library(fmsb)
 library(glmnet)
+library(car)
 
 #read in data - set NULL as NA
 year13 <- read.csv("MERGED2013_PP.csv", na.strings=c("NULL", "PrivacySuppressed"))
@@ -44,7 +45,7 @@ na_debt <- which(is.na(year13clean$DEBT_MDN))
 year13clean <- year13clean[-na_debt, ]
 
 # remove & save ID columns
-info <- year13clean[, c(1:10)]z
+info <- year13clean[, c(1:10)]
 year13clean <- year13clean[, c(-1:-10)]
 
 # remove & save y variables - what is our other y variable?
@@ -180,3 +181,30 @@ features_matrix[is.na(features_matrix)] <- -1
 fit.lasso <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=1)
 fit.ridge <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=0)
 fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
+
+#############################
+#         MODELING          #
+#############################
+
+#remove CIP values
+year13_features <- data.frame(other_factors, not_factors)
+
+#remove variables with DEBT in variable name
+columns <- names(year13_features)[grepl("DEBT", names(year13_features))]
+year13_features <- year13_features[, !(colnames(year13_features) %in% columns)]
+
+#add median debt variable back in
+year13clean <- cbind(year13_features, y_debt)
+
+#create models
+lm1 <- lm(y_debt ~ ., data = year13clean[,c(161:166)], na.action = na.exclude)
+summary(lm1)
+
+#adj R^2 of 0.7132
+lm2 <- lm(y_debt ~ st_fips + LOCALE + CCSIZSET + UGDS_BLACK + 
+          TUITIONFEE_OUT + PCTFLOAN + CDR3 +
+          NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
+          PAR_ED_PCT_1STGEN + PELL_RPY_3YR_RT_SUPP +
+          C150_4_POOLED_SUPP,
+          data=year13clean, na.action=na.exclude)
+summary(lm2)
