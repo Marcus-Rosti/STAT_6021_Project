@@ -8,82 +8,18 @@ library(fmsb)
 library(glmnet)
 library(car)
 
-#read in data - set NULL as NA
-year13 <- read.csv("MERGED2013_PP.csv", na.strings=c("NULL", "PrivacySuppressed"))
+source("Data_Parsing.R")
 
-# 7804 rows
-# 1729 columns
-dim(year13)
-
-# keep only 4 year colleges
-year13 <- year13[year13$PREDDEG == 3,]
-
-#remove private for-profit colleges (3)
-#1 is public, 2 is private non-profit
-year13 <- subset(year13, year13$CONTROL != 3)
-year13$CONTROL <- as.factor(year13$CONTROL)
-
-#remove columns with more than 500 na values, but keep longitude and latitude
-nafind <- function(x){sum(is.na(x))}
-keep <- c("LONGITUDE", "LATITUDE", "DEBT_MDN")
-nacount <- apply(year13, 2, "nafind")
-varWna <- which(nacount > 500)
-
-for (i in keep) {
-  if (any(colnames(year13)[varWna] == i)) {
-    varWna <- varWna[-which(colnames(year13)[varWna] == i)]
-  }
-}
-
-year13clean <- year13[,-varWna]
-
-# remove variables that have all the same values
-year13clean <- year13clean[sapply(year13clean, function(x) length(unique(x)) > 1)]
-
-# remove schools that have NA DEBT_MDN
-na_debt <- which(is.na(year13clean$DEBT_MDN))
-year13clean <- year13clean[-na_debt, ]
-
-# remove & save ID columns
-info <- year13clean[, c(1:10)]
-year13clean <- year13clean[, c(-1:-10)]
-
-# remove & save y variables - what is our other y variable?
-y_debt <- year13clean$DEBT_MDN
-year13clean$DEBT_MDN <- NULL
+year13clean <- cleanData("data/CollegeScorecard_Raw_Data/MERGED2013_PP.csv")
 
 ######################
 # CONVERT TO FACTORS #
 ######################
 
-# several factor variables follow a certain pattern - convert these to factors
-cip_factors <- as.data.frame(apply(year13clean[,grep("CIP[0-9][0-9][A-Z]", names(year13clean), value = TRUE)], 2, as.factor))
-columns <- names(cip_factors)
-not_cip_factors <- year13clean[, !(colnames(year13clean) %in% columns)]
-
-# these variables need to be converted to factors
-factors <- c("HCM2", "main", "HIGHDEG", "st_fips", "region", "LOCALE", "CCBASIC", "CCUGPROF", "CCSIZSET", "HBCU", "PBI",
-              "ANNHI", "TRIBAL", "AANAPII", "HSI", "NANTI", "MENONLY", "WOMENONLY", "DISTANCEONLY", "CURROPER")
-other_factors <- as.data.frame(apply(not_cip_factors[, factors], 2, as.factor))
-
-# collect variables that aren't factors
-not_factors <- not_cip_factors[, !(colnames(not_cip_factors) %in% factors)]
-
-# combine all back together
-year13_features <- data.frame(cip_factors, other_factors, not_factors)
-
-# remove variables that are only one value
-# when using str() it will say these variables have 2 levels, but 1 is NA
-constants <- c("TRIBAL", "poolyrs200", "poolyrs", "MENONLY", "DISTANCEONLY", "CURROPER", "HCM2", "CIP29CERT2")
-year13_features <- year13_features[,!(colnames(year13_features) %in% constants)]
-
-# 1713 schools
-# 377 features
-
-# TEST return colleges with complete data - yields only 484 colleges
-#complete <- which(complete.cases(year13_features))
-#y_debt <- y_debt[complete]
-#year13_features_test <- year13_features[complete, ]
+## several factor variables follow a certain pattern - convert these to factors
+#cip_factors <- as.data.frame(apply(year13clean[,grep("CIP[0-9][0-9][A-Z]", names(year13clean), value = TRUE)], 2, as.factor))
+#columns <- names(cip_factors)
+#not_cip_factors <- year13clean[, !(colnames(year13clean) %in% columns)]
 
 #####################
 # MULTICOLLINEARITY #
@@ -155,9 +91,6 @@ vif_func<-function(in_frame,thresh=10,trace=T,...){
 
 }
 
-#vif <- vif_func(year13_features, thresh = 100, trace = T)
-#form.in <- paste("y_debt ~", paste(vif, collapse = "+"))
-
 ################
 # FORWARD STEP #
 ################
@@ -186,25 +119,16 @@ fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
 #         MODELING          #
 #############################
 
-#remove CIP values
-year13_features <- data.frame(other_factors, not_factors)
-
-#remove variables with DEBT in variable name
-columns <- names(year13_features)[grepl("DEBT", names(year13_features))]
-year13_features <- year13_features[, !(colnames(year13_features) %in% columns)]
-
-#add median debt variable back in
-year13clean <- cbind(year13_features, y_debt)
-
 #create models
 lm1 <- lm(y_debt ~ ., data = year13clean[,c(161:166)], na.action = na.exclude)
 summary(lm1)
 
 #adj R^2 of 0.7132
-lm2 <- lm(y_debt ~ st_fips + LOCALE + CCSIZSET + UGDS_BLACK + 
+lm2 <- lm(y_debt ~ st_fips + LOCALE + CCSIZSET + UGDS_BLACK +
           TUITIONFEE_OUT + PCTFLOAN + CDR3 +
           NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
           PAR_ED_PCT_1STGEN + PELL_RPY_3YR_RT_SUPP +
           C150_4_POOLED_SUPP,
           data=year13clean, na.action=na.exclude)
+
 summary(lm2)

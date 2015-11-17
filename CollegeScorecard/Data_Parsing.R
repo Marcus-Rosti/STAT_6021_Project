@@ -1,14 +1,17 @@
+#' This function takes in a file location and cleans the data for relevant entries
+#'
+#'  @param path_to_csv is the the file locatio
+#'  @return clean_df the clean file location
+#'
 cleanData <- function(path_to_csv) {
   #read in data - set NULL as NA
-  year13 <- read.csv(path_to_csv, na.strings=c("NULL"))
+  year13 <- read.csv(path_to_csv, na.strings=c("NULL", "PrivacySuppressed"))
 
   #remove private for-profit colleges (3)
   #1 is public, 2 is private non-profit
+  year13 <- year13[year13$PREDDEG == 3,]
   year13 <- subset(year13, year13$CONTROL != 3)
   year13$CONTROL <- as.factor(year13$CONTROL)
-
-  #keep only colleges which their predominant degree is a bachelor's degree
-  year13 <- year13[year13$PREDDEG == 3,]
 
   #remove columns with more than 500 na values, but keet logitude and latitude
   nafind <- function(x){sum(is.na(x))}
@@ -22,22 +25,53 @@ cleanData <- function(path_to_csv) {
     }
   }
 
-  year13clean <- year13[,-varWna]
+  clean_df <- year13[,-varWna]
 
-  #remove ID columns
-  year13clean <- year13clean[,c(-1, -2, -3)]
+  # remove variables that have all the same value
+  clean_df <- clean_df[sapply(clean_df, function(x) length(unique(x)) > 1)]
 
-  #make categorical columns factors
-  uniquevalues <- lapply(year13clean, function(x) length(unique(x[!is.na(x)])))
-  uniquevalues <- uniquevalues[uniquevalues <= 12]
-  uniquevalues <- names(uniquevalues)
+  # remove schools that have NA DEBT_MDN
+  na_debt <- which(is.na(clean_df$DEBT_MDN))
+  clean_df <- clean_df[-na_debt, ]
 
-  for (i in uniquevalues) {
-    year13clean[[i]] <- as.factor(year13clean[[i]])
-  }
 
-  # make model, median debt is response
-  year13clean$DEBT_MDN <- as.numeric(year13clean$DEBT_MDN)
+  #remove ID columns only the first 3
+    # Mike removed the first 10 but they still might hold useful data
+  clean_df <- clean_df[,c(-1, -2, -3)]
 
-  return(year13clean)
+  # make sure debt is numeric
+  clean_df$DEBT_MDN <- as.numeric(clean_df$DEBT_MDN)
+
+  # Save the debt column
+  y_debt <- clean_df$DEBT_MDN
+  clean_df$DEBT_MDN <- NULL
+
+  #remove variables with DEBT in variable name
+  columns <- names(clean_df)[grepl("DEBT", names(clean_df))]
+  clean_df <- clean_df[, !(colnames(clean_df) %in% columns)]
+
+  #remove variables with CIP in variable name
+  columns <- names(clean_df)[grepl("CIP", names(clean_df))]
+  clean_df <- clean_df[, !(colnames(clean_df) %in% columns)]
+
+  #### Fix Factors
+  # these variables need to be converted to factors
+  factors <- c("HCM2", "main", "HIGHDEG", "st_fips", "region", "LOCALE", "CCBASIC", "CCUGPROF", "CCSIZSET", "HBCU", "PBI",
+              "ANNHI", "TRIBAL", "AANAPII", "HSI", "NANTI", "MENONLY", "WOMENONLY", "DISTANCEONLY", "CURROPER")
+  other_factors <- as.data.frame(apply(clean_df[, factors], 2, as.factor))
+
+  # collect variables that aren't factors
+  not_factors <- clean_df[, !(colnames(clean_df) %in% factors)]
+
+  # combine all back together
+  clean_df <- data.frame(other_factors, not_factors)
+
+  # remove variables that are only one value
+  # when using str() it will say these variables have 2 levels, but 1 is NA
+  constants <- c("TRIBAL", "poolyrs200", "poolyrs", "MENONLY", "DISTANCEONLY", "CURROPER", "HCM2", "CIP29CERT2")
+  clean_df <- clean_df[,!(colnames(clean_df) %in% constants)]
+
+  clean_df <- cbind(clean_df,y_debt)
+
+  return(clean_df)
 }
