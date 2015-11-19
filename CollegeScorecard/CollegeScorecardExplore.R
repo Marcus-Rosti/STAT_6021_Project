@@ -120,7 +120,7 @@ fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
 #############################
 
 #create models
-lm1 <- lm(y_debt ~ ., data = year13clean[,c(161:166)], na.action = na.exclude)
+lm1 <- lm(y_debt ~ ., data = year13clean, na.action = na.exclude)
 summary(lm1)
 
 #adj R^2 of 0.7132
