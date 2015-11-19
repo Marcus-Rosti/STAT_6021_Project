@@ -8,18 +8,17 @@ library(fmsb)
 library(glmnet)
 library(car)
 
+setwd("~/Git/STAT_6021_Project/CollegeScorecard")
+
 source("Data_Parsing.R")
 
-year13clean <- cleanData("data/CollegeScorecard_Raw_Data/MERGED2013_PP.csv")
+test = read.csv("MERGED2013_PP.csv")
 
-######################
-# CONVERT TO FACTORS #
-######################
+#data for debt analysis
+year13clean <- cleanData("MERGED2013_PP.csv")
 
-## several factor variables follow a certain pattern - convert these to factors
-#cip_factors <- as.data.frame(apply(year13clean[,grep("CIP[0-9][0-9][A-Z]", names(year13clean), value = TRUE)], 2, as.factor))
-#columns <- names(cip_factors)
-#not_cip_factors <- year13clean[, !(colnames(year13clean) %in% columns)]
+#data for income analysis
+year13cleanIncome <- cleanDataIncome("MERGED2013_PP.csv")
 
 #####################
 # MULTICOLLINEARITY #
@@ -124,11 +123,12 @@ lm1 <- lm(y_debt ~ ., data = year13clean, na.action = na.exclude)
 summary(lm1)
 
 #adj R^2 of 0.7132
-lm2 <- lm(y_debt ~ st_fips + LOCALE + CCSIZSET + UGDS_BLACK +
+lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK +
           TUITIONFEE_OUT + PCTFLOAN + CDR3 +
           NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
           PAR_ED_PCT_1STGEN + PELL_RPY_3YR_RT_SUPP +
           C150_4_POOLED_SUPP,
-          data=year13clean, na.action=na.exclude)
+          data=na.omit(year13clean))
 
 summary(lm2)
+levels(year13clean$STABBR)
