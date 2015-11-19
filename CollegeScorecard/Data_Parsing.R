@@ -105,6 +105,10 @@ cleanDataIncome <- function(path_to_csv) {
   #remove ID columns only the first 3
   clean_df <- clean_df[,c(-1, -2, -3)]
   
+  # remove schools that have NA DEBT_MDN
+  na_debt <- which(is.na(clean_df$DEBT_MDN))
+  clean_df <- clean_df[-na_debt, ]
+  
   # make sure debt and income are numeric
   clean_df$DEBT_MDN <- as.numeric(clean_df$DEBT_MDN)
   clean_df$md_earn_wne_p6 <- as.numeric(clean_df$md_earn_wne_p6)
