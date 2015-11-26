@@ -9,7 +9,19 @@ cleanData <- function(path_to_csv) {
 
   #remove private for-profit colleges (3)
   #1 is public, 2 is private non-profit
-  year13 <- year13[year13$PREDDEG == 3,]
+  #year13 <- year13[year13$PREDDEG == 3,] ### Removed in favor of Carnegie Classification
+  # Trying to just keep CCBASIC 15-23, which is:
+     # 15,Research Universities (very high research activity)
+     # 16,Research Universities (high research activity)
+     # 17,Doctoral/Research Universities
+     # 18,Master's Colleges and Universities (larger programs)
+     # 19,Master's Colleges and Universities (medium programs)
+     # 20,Master's Colleges and Universities (smaller programs)
+     # 21,Baccalaureate Colleges--Arts & Sciences
+     # 22,Baccalaureate Colleges--Diverse Fields
+     # 23,Baccalaureate/Associate's Colleges
+  year13 <- year13[year13$CCBASIC %in% c(15, 16, 17, 18, 19, 20, 21, 22, 23),]
+
   year13 <- subset(year13, year13$CONTROL != 3)
   year13$CONTROL <- as.factor(year13$CONTROL)
 
@@ -55,8 +67,9 @@ cleanData <- function(path_to_csv) {
 
   #### Fix Factors
   # these variables need to be converted to factors
+  ### Removed TRIBAL when it now is removed above
   factors <- c("HCM2", "main", "HIGHDEG", "st_fips", "region", "LOCALE", "CCBASIC", "CCUGPROF", "CCSIZSET", "HBCU", "PBI",
-              "ANNHI", "TRIBAL", "AANAPII", "HSI", "NANTI", "MENONLY", "WOMENONLY", "DISTANCEONLY", "CURROPER")
+              "ANNHI", "AANAPII", "HSI", "NANTI", "MENONLY", "WOMENONLY", "DISTANCEONLY", "CURROPER")
   other_factors <- as.data.frame(apply(clean_df[, factors], 2, as.factor))
 
   # collect variables that aren't factors
