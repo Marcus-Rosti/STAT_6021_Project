@@ -130,8 +130,9 @@ summary(lm1)
 
 #relevel default to Virginia
 year13clean <- within(year13clean, STABBR <- relevel(STABBR, ref = "VA"))
+year13clean2 <- within(year13clean2, STABBR <- relevel(STABBR, ref = "VA"))
 
-#adj R^2 of 0.7132
+#adj R^2 of 0.7888
 lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE + poly(ADM_RATE,2) + 
           TUITIONFEE_OUT + PCTFLOAN + CDR3 +
           NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
@@ -140,4 +141,12 @@ lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE + poly(ADM_RATE,2) +
           data=na.omit(year13clean))
 
 summary(lm2)
-levels(year13clean$STABBR)
+
+#2 year colleges
+lm3 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE +
+          TUITIONFEE_OUT + PCTFLOAN + CDR3 +
+          NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
+          PAR_ED_PCT_1STGEN + PELL_RPY_3YR_RT_SUPP,
+          data=na.omit(year13clean2))
+
+summary(lm3)
