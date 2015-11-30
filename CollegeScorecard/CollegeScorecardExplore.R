@@ -7,6 +7,7 @@ library(leaps)
 library(fmsb)
 library(glmnet)
 library(car)
+library(mice)
 
 setwd("~/Git/STAT_6021_Project/CollegeScorecard")
 
@@ -14,11 +15,11 @@ source("Data_Parsing.R")
 
 test = read.csv("MERGED2013_PP.csv")
 
-#data for debt analysis
+#data for debt analysis of 4 year colleges
 year13clean <- cleanData("MERGED2013_PP.csv")
 
-#data for income analysis
-year13cleanIncome <- cleanDataIncome("MERGED2013_PP.csv")
+#data for debt analysis of 2 year colleges
+year13clean2<- cleanData2("MERGED2013_PP.csv")
 
 #####################
 # MULTICOLLINEARITY #
@@ -115,15 +116,20 @@ fit.ridge <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=0)
 fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
 
 #############################
+#         Impute            #
+#############################
+year13imp <- mice(year13clean, m=10, maxit=25)
+
+#############################
 #         MODELING          #
 #############################
 
 #create models
-lm1 <- lm(y_debt ~ ., data = year13clean, na.action = na.exclude)
+lm1 <- lm(y_debt ~ ., data = year13clean[,c(50:60, 128)], na.action = na.exclude)
 summary(lm1)
 
 #adj R^2 of 0.7132
-lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK +
+lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE + poly(ADM_RATE,2) + 
           TUITIONFEE_OUT + PCTFLOAN + CDR3 +
           NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
           PAR_ED_PCT_1STGEN + PELL_RPY_3YR_RT_SUPP +
