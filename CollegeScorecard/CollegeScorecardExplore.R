@@ -19,7 +19,7 @@ test = read.csv("MERGED2013_PP.csv")
 year13clean <- cleanData("MERGED2013_PP.csv")
 
 #data for debt analysis of 2 year colleges
-year13clean2<- cleanData2("MERGED2013_PP.csv")
+year13clean2 <- cleanData2("MERGED2013_PP.csv")
 
 #####################
 # MULTICOLLINEARITY #
@@ -127,6 +127,9 @@ year13imp <- mice(year13clean, m=10, maxit=25)
 #create models
 lm1 <- lm(y_debt ~ ., data = year13clean[,c(50:60, 128)], na.action = na.exclude)
 summary(lm1)
+
+#relevel default to Virginia
+year13clean <- within(year13clean, STABBR <- relevel(STABBR, ref = "VA"))
 
 #adj R^2 of 0.7132
 lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE + poly(ADM_RATE,2) + 

@@ -44,7 +44,6 @@ cleanData <- function(path_to_csv) {
   na_debt <- which(is.na(clean_df$DEBT_MDN))
   clean_df <- clean_df[-na_debt, ]
 
-
   #remove ID columns only the first 3
   clean_df <- clean_df[,c(-1, -2, -3)]
 
@@ -78,7 +77,7 @@ cleanData <- function(path_to_csv) {
 
   # remove variables that are only one value
   # when using str() it will say these variables have 2 levels, but 1 is NA
-  constants <- c("TRIBAL", "poolyrs200", "poolyrs", "MENONLY", "DISTANCEONLY", "CURROPER", "HCM2", "CIP29CERT2")
+  constants <- c("poolyrs200", "poolyrs", "MENONLY", "DISTANCEONLY", "CURROPER", "HCM2", "CIP29CERT2")
   clean_df <- clean_df[,!(colnames(clean_df) %in% constants)]
 
   clean_df <- cbind(clean_df, y_debt)
@@ -140,7 +139,7 @@ cleanData2 <- function(path_to_csv) {
   # these variables need to be converted to factors
   ### Removed TRIBAL when it now is removed above
   factors <- c("HCM2", "main", "HIGHDEG", "st_fips", "region", "LOCALE", "CCBASIC", "CCUGPROF", "CCSIZSET", "HBCU", "PBI",
-               "ANNHI", "AANAPII", "HSI", "NANTI", "MENONLY", "WOMENONLY", "DISTANCEONLY", "CURROPER")
+               "ANNHI", "AANAPII", "HSI", "NANTI", "WOMENONLY", "CURROPER")
   other_factors <- as.data.frame(apply(clean_df[, factors], 2, as.factor))
   
   # collect variables that aren't factors
@@ -151,7 +150,7 @@ cleanData2 <- function(path_to_csv) {
   
   # remove variables that are only one value
   # when using str() it will say these variables have 2 levels, but 1 is NA
-  constants <- c("TRIBAL", "poolyrs200", "poolyrs", "MENONLY", "DISTANCEONLY", "CURROPER", "HCM2", "CIP29CERT2")
+  constants <- c("poolyrs200", "poolyrs", "CURROPER", "HCM2", "CIP29CERT2")
   clean_df <- clean_df[,!(colnames(clean_df) %in% constants)]
   
   clean_df <- cbind(clean_df, y_debt)
