@@ -91,7 +91,7 @@ cleanData2 <- function(path_to_csv) {
   year13 <- read.csv(path_to_csv, na.strings=c("NULL", "PrivacySuppressed"))
   
   #2 year colleges only
-  year13 <- year13[year13$CCBASIC %in% c(1:9,11,12,13),]
+  year13 <- year13[year13$CCBASIC %in% c(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13),]
   
   year13 <- subset(year13, year13$CONTROL != 3)
   year13$CONTROL <- as.factor(year13$CONTROL)
