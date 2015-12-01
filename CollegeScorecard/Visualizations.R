@@ -58,7 +58,7 @@ avg.debt_4 <- avg.debt_4[-26, ]
 avg.debt_2 <- aggregate(DEBT_MDN ~ STABBR, data = data_2, FUN = mean)
 colnames(avg.debt_2)[1] <- "STUSPS10"
 # remove "MP"
-avg.debt_2 <- avg.debt_2[-26, ]
+#avg.debt_2 <- avg.debt_2[-26, ]
 
 # join columns - 4 year
 state.df <- join(state.df_fort, state@data, by="id")
