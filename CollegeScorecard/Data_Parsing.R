@@ -19,7 +19,21 @@ cleanData <- function(path_to_csv) {
      # 22,Baccalaureate Colleges--Diverse Fields
      # 23,Baccalaureate/Associate's Colleges
   year13 <- year13[year13$CCBASIC %in% c(15, 16, 17, 18, 19, 20, 21, 22, 23),]
-
+  # Removing any CCBASIC anomalies with CCSIZSET 6:17, which is:
+    #   6: Very small 4-year, primarily nonresidential
+    #   7: Very small 4-year, primarily residential
+    #   8: Very small 4-year, highly residential
+    #   9: Small 4-year, primarily nonresidential
+    #   10: Small 4-year, primarily residential
+    #   11: Small 4-year, highly residential
+    #   12: Medium 4-year, primarily nonresidential
+    #   13: Medium 4-year, primarily residential
+    #   14: Medium 4-year, highly residential
+    #   15: Large 4-year, primarily nonresidential
+    #   16: Large 4-year, primarily residential
+    #   17: Large 4-year, highly residential
+  year13 <- year13[year13$CCSIZSET %in% c(6:17),]
+  
   year13 <- subset(year13, year13$CONTROL != 3)
   year13$CONTROL <- as.factor(year13$CONTROL)
 
@@ -91,7 +105,9 @@ cleanData2 <- function(path_to_csv) {
   
   #2 year colleges only
   year13 <- year13[year13$CCBASIC %in% c(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13),]
-  
+  # Removing any CCBASIC anomalies
+  year13 <- year13[year13$CCSIZSET %in% c(1:5),]
+
   year13 <- subset(year13, year13$CONTROL != 3)
   year13$CONTROL <- as.factor(year13$CONTROL)
   

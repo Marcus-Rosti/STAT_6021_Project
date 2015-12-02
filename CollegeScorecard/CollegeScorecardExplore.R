@@ -132,7 +132,7 @@ summary(lm1)
 year13clean <- within(year13clean, STABBR <- relevel(STABBR, ref = "VA"))
 year13clean2 <- within(year13clean2, STABBR <- relevel(STABBR, ref = "VA"))
 
-#adj R^2 of 0.8039
+#adj R^2 of 0.8202
 lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE + poly(ADM_RATE,3) + 
           TUITIONFEE_OUT + PCTFLOAN + CDR3 +
           NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
@@ -142,22 +142,21 @@ lm2 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE + poly(ADM_RATE,3) +
 
 summary(lm2)
 
-#adj R^2 of 0.7888
-lm3 <- lm(y_debt ~ STABBR + CCSIZSET + 
-            TUITIONFEE_OUT + PCTFLOAN + CDR3 +
-            NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N +
-            C150_4_POOLED_SUPP,
-          data=na.omit(year13clean))
-
-summary(lm3)
-vif(lm3)
-
 #2 year colleges (removed ADM_RATE, C150_4_POOLED_SUPP)
-lm4 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE +
+lm3 <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE +
           TUITIONFEE_OUT + PCTFLOAN + CDR3 +
           NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N + DEP_RPY_5YR_N +
           PAR_ED_PCT_1STGEN + PELL_RPY_3YR_RT_SUPP,
           data=na.omit(year13clean2))
 
-summary(lm4)
+summary(lm3)
 
+#adj R^2 of 0.7888
+lm4 <- lm(y_debt ~ STABBR + CCSIZSET + 
+            TUITIONFEE_OUT + PCTFLOAN + CDR3 +
+            NOTFIRSTGEN_RPY_3YR_RT + DEP_INC_PCT_LO + RPY_5YR_N +
+            C150_4_POOLED_SUPP,
+          data=na.omit(year13clean))
+
+summary(lm4)
+vif(lm4)
