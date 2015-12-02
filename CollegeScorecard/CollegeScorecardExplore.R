@@ -107,13 +107,40 @@ step2 <- step(null, scope = list(lower = null, upper = full), direction = "forwa
 #############################
 # RIDGE, LASSO, ELASTIC NET #
 #############################
-features_matrix <- as.matrix(year13_features[1:377])
-# NA Values don't work in glmnet. For now I made them -1, but will need case-by-case review
-features_matrix[is.na(features_matrix)] <- -1
+features_matrix <- year13clean[,c("CCSIZSET", "UGDS_BLACK", "TUITFTE",
+                                  "TUITIONFEE_OUT", "PCTFLOAN", "CDR3",
+                                  "NOTFIRSTGEN_RPY_3YR_RT", "DEP_INC_PCT_LO", "DEP_RPY_5YR_N",
+                                  "PAR_ED_PCT_1STGEN", "PELL_RPY_3YR_RT_SUPP",
+                                  "C150_4_POOLED_SUPP", "y_debt")]
 
-fit.lasso <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=1)
+# Remove the NA values
+features_matrix <- na.omit(features_matrix)
+
+# Separate out the debt, and turn the factors into a matrix
+y_debt <- features_matrix[,13]
+features_matrix <- model.matrix(~.,data=features_matrix[,1:12])
+
+# Create the fits
+fit.lasso <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=1, nlambda=100)
 fit.ridge <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=0)
 fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
+
+fit.lasso
+# [46,] 18 0.69010   40.970
+# [47,] 20 0.69050   37.330
+# [48,] 20 0.69080   34.010
+# [49,] 20 0.69110   30.990
+# [50,] 20 0.69130   28.240
+# [51,] 20 0.69150   25.730
+# [52,] 22 0.69200   23.440
+
+coef(fit.lasso,s=25.730)
+
+
+# Plot the fits
+plot(fit.lasso, xvar="lambda")
+plot(fit.ridge, xvar="lambda")
+plot(fit.elastic, xvar="lambda")
 
 #############################
 #         Impute            #
