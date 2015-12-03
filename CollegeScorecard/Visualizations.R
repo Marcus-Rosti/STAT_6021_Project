@@ -111,3 +111,53 @@ ggp <- ggp + theme(panel.background = element_blank(),
                    panel.grid = element_blank())
 
 plot(ggp)
+
+
+##### Graphs of Lowest Debt, Debt for Highest Tuition
+library(data.table)
+
+year13graph <- year13clean[,c("INSTNM", "STABBR", "CCSIZSET", "UGDS_BLACK", "TUITFTE",
+                              "TUITIONFEE_OUT", "PCTFLOAN", "CDR3",
+                              "NOTFIRSTGEN_RPY_3YR_RT", "DEP_INC_PCT_LO", "RPY_5YR_N", "DEP_RPY_5YR_N",
+                              "PAR_ED_PCT_1STGEN", "PELL_RPY_3YR_RT_SUPP",
+                              "C150_4_POOLED_SUPP", "y_debt")]
+
+nrow(year13graph[complete.cases(year13graph),])
+year13graphbig <- year13clean[(year13clean$INSTNM %in% year13graph$INSTNM),]
+
+
+
+##### Graph the Admission Rates at Lowest Debt Colleges
+adm_rate <- data.table(year13graphbig[(year13clean$y_debt <= 7000 & complete.cases(year13clean[,"ADM_RATE"])),c("INSTNM", "ADM_RATE", "y_debt")])
+adm_rate$ADM_RATE <- round(adm_rate$ADM_RATE*100,0)
+setkey(adm_rate, y_debt)
+adm_rate$title <- paste0(rownames(adm_rate), ". ", adm_rate$INSTNM, " ($", round(adm_rate$y_debt,0), ")")
+adm_rate$title <- factor(adm_rate$title, levels = adm_rate$title[order(rev(as.numeric(rownames(adm_rate))))])
+
+ggplot(adm_rate, aes(x=title, y=ADM_RATE)) +
+  geom_bar(stat="identity", fill="darkseagreen3") +
+  geom_text(aes(x=title, y=ADM_RATE-0.55, ymax=ADM_RATE, hjust=1.4, label=paste0(ADM_RATE, "%")), size=4) + 
+  theme_light(base_size=16) +
+  theme(axis.text.y = element_text(hjust=0, color="black"), axis.text.x=element_blank()) +
+  xlab("") + ylab("") +
+  coord_flip() +
+  ggtitle("Admission Rates of Lowest Debt Colleges")
+
+##### Graph the Average Debt for the Most Expensive Colleges
+highcost <- year13graphbig[order(-year13graphbig$COSTT4_A)[1:20],c("INSTNM", "COSTT4_A", "y_debt")]
+rownames(highcost) <- seq(1:nrow(highcost))
+highcost$title <- paste0(rownames(highcost), ". ", highcost$INSTNM, " ($", highcost$COSTT4_A, ")")
+highcost$title <- factor(highcost$title, levels = highcost$title[order(rev(as.numeric(rownames(highcost))))])
+mean(year13graphbig$y_debt)
+highcost$mean <- round(mean(year13graphbig$y_debt),0)
+
+ggplot(highcost, aes(x=title, y=y_debt)) +
+  geom_bar(stat="identity", fill="mediumorchid2") +
+  geom_errorbar(data=highcost, aes(y=mean, ymax=mean, ymin=mean), color="red") +
+  geom_text(aes(x=title, y=y_debt-500, ymax=y_debt, hjust=0.95, label=paste0("$", round(y_debt,0))), size=4) + 
+  theme_light(base_size=16) +
+  theme(axis.text.y = element_text(hjust=0, color="black"), axis.text.x=element_blank()) +
+  xlab("") + ylab("") +
+  coord_flip() +
+  ggtitle("Average Debt for Most Expensive Colleges")
+
