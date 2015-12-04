@@ -201,16 +201,14 @@ fit.ridge <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=0)
 fit.elastic <- glmnet(x=features_matrix, y=y_debt, family="gaussian", alpha=.5)
 
 fit.lasso
-# [46,] 18 0.69010   40.970
-# [47,] 20 0.69050   37.330
-# [48,] 20 0.69080   34.010
-# [49,] 20 0.69110   30.990
-# [50,] 20 0.69130   28.240
-# [51,] 20 0.69150   25.730
-# [52,] 22 0.69200   23.440
+# [17,]  7 0.56590  608.400
+# [18,]  8 0.58020  554.300
+# [19,]  8 0.59380  505.100
+# [20,]  8 0.60510  460.200
 
-coef(fit.lasso,s=25.730)
-
+coef(fit.lasso,s=608.400)
+# Suggests setting the coefficients of these to zero: NOTFIRSTGEN_RPY_3YR_RT, CCSIZSET, DEP_RPY_5YR_N, and
+# PELL_RPY_3YR_RT_SUPP.
 
 # Plot the fits
 plot(fit.lasso, xvar="lambda")
@@ -245,6 +243,7 @@ lm <- lm(y_debt ~ STABBR + CCSIZSET + UGDS_BLACK + TUITFTE  +
 summary(lm)
 vif(lm)
 
+# Using Lasso results, VIF, and wanting a simpler alternative model:
 #adj R^2 of 0.6529
 lm2 <- lm(y_debt ~ STABBR + CCSIZSET + 
             TUITIONFEE_OUT + PCTFLOAN + CDR3 +
