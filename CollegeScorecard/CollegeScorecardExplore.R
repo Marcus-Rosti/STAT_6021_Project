@@ -100,75 +100,82 @@ vif_func<-function(in_frame,thresh=10,trace=T,...){
 # FORWARD STEP #
 ################
 
-# Remove some columns that error on the "full" run:
-year13forward <- year13clean[,!names(year13clean) %in% c("main", "PBI", "ANNHI", "WOMENONLY")]
-year13first_third <- year13forward[,c(1:54,163)]
-year13second_third1 <- year13forward[,c(55:81,163)]
-year13second_third2 <- year13forward[,c(82:108,163)]
-year13last_third <- year13forward[,c(109:162,163)]
+# Remove some columns that error on the "full" run, as well as candidate keys:
+year13forward <- year13clean[,!names(year13clean) %in% c("main", "st_fips", "INSTNM", "ZIP", "INSTURL", "NPCURL", 
+                                                         "HIGHDEG", "PBI", "ANNHI", "WOMENONLY", "CITY",
+                                                         "LATITUDE", "LONGITUDE")]
+names(year13forward)
 
-## Run first third on 1,080 rows due to NAs. Yields INSTURL, HIGHDEG
-year13first_third <- na.omit(year13first_third)
-first_null <- lm(y_debt ~ 1, data = year13first_third)
-first_third <- lm(y_debt ~ ., data = year13first_third)
-step1 <- step(first_null, scope = list(lower = first_null, upper = first_third), direction = "forward", trace = T)
+# Subset into four groups
+year13first_fourth <- year13forward[,c(1:38,154)]
+year13second_fourth <- year13forward[,c(39:76,154)]
+year13third_fourth <- year13forward[,c(78:114,154)]
+year13last_fourth <- year13forward[,c(115:153,154)]
 
-## Run first half of second third on 442 rows due to NAs. Yields:
-# DEP_INC_AVG + APPL_SCH_PCT_GE3 + MD_INC_RPY_5YR_RT + 
-# FIRSTGEN_RPY_7YR_RT + IND_INC_AVG + IND_INC_N + LO_INC_RPY_5YR_RT + 
-# DEP_INC_N + DEP_INC_PCT_M1 + LO_INC_RPY_7YR_RT + DEP_INC_PCT_LO + 
-# IND_INC_PCT_LO + IND_INC_PCT_M1 + PAR_ED_PCT_1STGEN + DEP_STAT_PCT_IND + 
-# FIRSTGEN_RPY_5YR_RT + NOTFIRSTGEN_RPY_7YR_RT
-year13second_third1 <- na.omit(year13second_third1)
-second_null <- lm(y_debt ~ 1, data = year13second_third1)
-second_third <- lm(y_debt ~ ., data = year13second_third1)
-step2 <- step(second_null, scope = list(lower = second_null, upper = second_third), direction = "forward", trace = T)
+## Run first fourth on 1,080 rows due to NAs. Yields:
+# STABBR + CCSIZSET + CONTROL + LOCALE + 
+# CCBASIC + ADM_RATE + HBCU + CCUGPROF + UGDS_ASIAN + UGDS_2MOR + 
+# AccredAgency + UGDS_AIAN
+year13first_fourth <- na.omit(year13first_fourth)
+first_null <- lm(y_debt ~ 1, data = year13first_fourth)
+first_fourth <- lm(y_debt ~ ., data = year13first_fourth)
+step1 <- step(first_null, scope = list(lower = first_null, upper = first_fourth), direction = "forward", trace = T)
+step1$call
 
-# Run second half of second third on 656 rows due to NAs. Yields:
-# DEP_INC_AVG + APPL_SCH_PCT_GE3 + MD_INC_RPY_5YR_RT + 
-# FIRSTGEN_RPY_7YR_RT + IND_INC_AVG + IND_INC_N + LO_INC_RPY_5YR_RT + 
-# DEP_INC_N + DEP_INC_PCT_M1 + LO_INC_RPY_7YR_RT + DEP_INC_PCT_LO + 
-# IND_INC_PCT_LO + IND_INC_PCT_M1 + PAR_ED_PCT_1STGEN + DEP_STAT_PCT_IND + 
-# FIRSTGEN_RPY_5YR_RT + NOTFIRSTGEN_RPY_7YR_RT
-year13second_third2 <- na.omit(year13second_third2)
-second_null <- lm(y_debt ~ 1, data = year13second_third2)
-second_third <- lm(y_debt ~ ., data = year13second_third2)
-step2 <- step(second_null, scope = list(lower = second_null, upper = second_third), direction = "forward", trace = T)
+## Run second fourth on 394 rows due to NAs. Yields:
+# COSTT4_A + PCTFLOAN + RET_FT4 + PCTPELL + 
+# MD_INC_RPY_3YR_RT + PFTFTUG1_EF + CDR3 + UG25abv + TUITFTE + 
+# C150_4_NRA + D200_4 + TUITIONFEE_IN + PFTFAC + FIRSTGEN_RPY_5YR_RT
+year13second_fourth <- na.omit(year13second_fourth)
+second_null <- lm(y_debt ~ 1, data = year13second_fourth)
+second_fourth <- lm(y_debt ~ ., data = year13second_fourth)
+step2 <- step(second_null, scope = list(lower = second_null, upper = second_fourth), direction = "forward", trace = T)
+step2$call
 
-# Run last third on 409 rows due to NAs. Yields:
-# C150_4_POOLED_SUPP + HI_INC_RPY_7YR_N + APPL_SCH_N + 
-# NOPELL_RPY_3YR_RT_SUPP + NOPELL_RPY_5YR_N + PAR_ED_N + IND_RPY_3YR_RT_SUPP + 
-# COMPL_RPY_3YR_RT_SUPP + DEP_RPY_3YR_RT_SUPP + PELL_RPY_3YR_RT_SUPP + 
-# DEP_RPY_5YR_N + RPY_3YR_RT_SUPP + FEMALE_RPY_3YR_N + FIRSTGEN_RPY_5YR_N
-year13last_third <- na.omit(year13last_third)
-third_null <- lm(y_debt ~ 1, data = year13last_third)
-last_third <- lm(y_debt ~ ., data = year13last_third)
-step3 <- step(third_null, scope = list(lower = third_null, upper = last_third), direction = "forward", trace = T)
+# Run third fourth on 415 rows due to NAs. Yields:
+# DEP_INC_AVG + APPL_SCH_PCT_GE3 + PAR_ED_PCT_MS + 
+# IND_INC_AVG + IND_INC_PCT_LO + DEP_STAT_PCT_IND + DEP_RPY_3YR_N + 
+# APPL_SCH_N + PAR_ED_PCT_HS + HI_INC_RPY_3YR_N + DEP_INC_N + 
+# MALE_RPY_3YR_N + APPL_SCH_PCT_GE5 + DEP_INC_PCT_M1 + NOTFIRSTGEN_RPY_3YR_N + 
+# NONCOM_RPY_3YR_N + MD_INC_RPY_3YR_N
+year13third_fourth <- na.omit(year13third_fourth)
+third_null <- lm(y_debt ~ 1, data = year13third_fourth)
+third_fourth <- lm(y_debt ~ ., data = year13third_fourth)
+step3 <- step(third_null, scope = list(lower = third_null, upper = third_fourth), direction = "forward", trace = T)
+step3$call
+
+# Run last third on 567 rows due to NAs. Yields:
+# C150_4_POOLED_SUPP + HI_INC_RPY_7YR_N + 
+# MALE_RPY_7YR_N + NOPELL_RPY_3YR_RT_SUPP + NOTFIRSTGEN_RPY_3YR_RT_SUPP + 
+# PELL_RPY_3YR_RT_SUPP + RPY_3YR_RT_SUPP + COMPL_RPY_3YR_RT_SUPP + 
+# DEP_RPY_7YR_N + NONCOM_RPY_7YR_N + MALE_RPY_5YR_N + NONCOM_RPY_3YR_RT_SUPP + 
+# DEP_RPY_5YR_N + IND_RPY_3YR_RT_SUPP
+year13last_fourth <- na.omit(year13last_fourth)
+last_null <- lm(y_debt ~ 1, data = year13last_fourth)
+last_fourth <- lm(y_debt ~ ., data = year13last_fourth)
+step4 <- step(last_null, scope = list(lower = last_null, upper = last_fourth), direction = "forward", trace = T)
+step4$call
 
 # Create a final data set with all yielded columns
-year13step_final <- year13clean[,c("INSTURL", "HIGHDEG",
-                                    "DEP_INC_AVG", "APPL_SCH_PCT_GE3", "MD_INC_RPY_5YR_RT",
-                                    "FIRSTGEN_RPY_7YR_RT", "IND_INC_AVG", "IND_INC_N", "LO_INC_RPY_5YR_RT",
-                                    "DEP_INC_N", "DEP_INC_PCT_M1", "LO_INC_RPY_7YR_RT", "DEP_INC_PCT_LO",
-                                    "IND_INC_PCT_LO", "IND_INC_PCT_M1", "PAR_ED_PCT_1STGEN", "DEP_STAT_PCT_IND",
-                                    "FIRSTGEN_RPY_5YR_RT", "NOTFIRSTGEN_RPY_7YR_RT",
-                                    "DEP_INC_AVG", "APPL_SCH_PCT_GE3", "MD_INC_RPY_5YR_RT",
-                                    "FIRSTGEN_RPY_7YR_RT", "IND_INC_AVG", "IND_INC_N", "LO_INC_RPY_5YR_RT",
-                                    "DEP_INC_N", "DEP_INC_PCT_M1", "LO_INC_RPY_7YR_RT", "DEP_INC_PCT_LO",
-                                    "IND_INC_PCT_LO", "IND_INC_PCT_M1", "PAR_ED_PCT_1STGEN", "DEP_STAT_PCT_IND",
-                                    "FIRSTGEN_RPY_5YR_RT", "NOTFIRSTGEN_RPY_7YR_RT",
-                                    "C150_4_POOLED_SUPP", "HI_INC_RPY_7YR_N", "APPL_SCH_N",
-                                    "NOPELL_RPY_3YR_RT_SUPP", "NOPELL_RPY_5YR_N", "PAR_ED_N", "IND_RPY_3YR_RT_SUPP",
-                                    "COMPL_RPY_3YR_RT_SUPP", "DEP_RPY_3YR_RT_SUPP", "PELL_RPY_3YR_RT_SUPP",
-                                    "DEP_RPY_5YR_N", "RPY_3YR_RT_SUPP", "FEMALE_RPY_3YR_N", "FIRSTGEN_RPY_5YR_N", "y_debt")]
+year13step_final <- year13clean[,c("STABBR", "CCSIZSET", "CONTROL", "LOCALE",
+                                   "COSTT4_A", "PCTFLOAN", "RET_FT4", "PCTPELL",
+                                   "DEP_INC_AVG", "APPL_SCH_PCT_GE3", "PAR_ED_PCT_MS",
+                                   "IND_INC_AVG",
+                                   "C150_4_POOLED_SUPP", "HI_INC_RPY_7YR_N",
+                                   "MALE_RPY_7YR_N", "NOPELL_RPY_3YR_RT_SUPP",
+                                   "y_debt")]
 
-# Run final on 601 rows due to NAs. Yields:
-# INSTURL + HIGHDEG + C150_4_POOLED_SUPP
+# Run final on 1029 rows due to NAs. 
 year13step_final <- na.omit(year13step_final)
 final_null <- lm(y_debt ~ 1, data = year13step_final)
 final_full <- lm(y_debt ~ ., data = year13step_final)
-step2 <- step(final_null, scope = list(lower = final_null, upper = final_full), direction = "forward", trace = T)
-
+final_step <- step(final_null, scope = list(lower = final_null, upper = final_full), direction = "forward", trace = T)
+final_step$call
+lmforward <- lm(formula = y_debt ~ DEP_INC_AVG + PCTFLOAN + RET_FT4 + APPL_SCH_PCT_GE3 + 
+     STABBR + CCSIZSET + CONTROL + PCTPELL + NOPELL_RPY_3YR_RT_SUPP + 
+     HI_INC_RPY_7YR_N + IND_INC_AVG + C150_4_POOLED_SUPP, data=year13clean, na.action = na.omit)
+summary(lmforward)
+#adj R^2 of 0.6992
 
 ##################
 # REGULARIZATION #
