@@ -113,6 +113,61 @@ ggp <- ggp + theme(panel.background = element_blank(),
 plot(ggp)
 
 
+######################
+# STATE COEFFICIENTS #
+######################
+
+state_coef <- data.frame(coef(lm))
+state_coef <- cbind(Row.Names = rownames(state_coef), state_coef)
+rownames(state_coef) <- NULL
+colnames(state_coef) <- c("STUSPS10", "Coefficient")
+state_coef <- state_coef[grep("STABBR", state_coef[,1]),]
+state_coef$STUSPS10 <- substr(state_coef$STUSPS10, 7, 8)
+state.df <- join(state.df, state_coef, by = "STUSPS10")
+
+# plot 4 year state coefficients
+ggp <- ggplot(data=state.df, aes(x=long, y=lat, group=group))   # draw polygons
+ggp <- ggp + geom_path(color="#d3d3d3", size = 1) # draw boundaries
+ggp <- ggp + coord_map()
+ggp <- ggp + scale_fill_gradient(low="darkorange", high = "darkorange4", na.value = "white")
+ggp <- ggp + geom_polygon(aes(fill = Coefficient))
+ggp <- ggp + ggtitle(expression(atop(bold("State location coefficients"), atop("4-Year Colleges", ""))))
+ggp <- ggp + theme(panel.background = element_blank(),
+                   axis.ticks = element_blank(),
+                   axis.text = element_blank(),
+                   axis.title = element_blank(), 
+                   panel.grid = element_blank())
+
+plot(ggp)
+sort(round(coef(lm3),0))
+state_coef2 <- data.frame(coef(lm3))
+state_coef2 <- cbind(Row.Names = rownames(state_coef2), state_coef2)
+rownames(state_coef2) <- NULL
+colnames(state_coef2) <- c("STUSPS10", "Coefficient")
+state_coef2 <- state_coef2[grep("STABBR", state_coef2[,1]),]
+state_coef2$STUSPS10 <- substr(state_coef2$STUSPS10, 7, 8)
+state.df_2 <- join(state.df_2, state_coef2, by = "STUSPS10")
+
+# plot 4 year state coefficients
+ggp <- ggplot(data=state.df_2, aes(x=long, y=lat, group=group))   # draw polygons
+ggp <- ggp + geom_path(color="#d3d3d3", size = 1) # draw boundaries
+ggp <- ggp + coord_map()
+ggp <- ggp + scale_fill_gradient(low="chartreuse", high = "chartreuse4", na.value = "white")
+ggp <- ggp + geom_polygon(aes(fill = Coefficient))
+ggp <- ggp + ggtitle(expression(atop(bold("State location coefficients"), atop("2-Year Colleges", ""))))
+ggp <- ggp + theme(panel.background = element_blank(),
+                   axis.ticks = element_blank(),
+                   axis.text = element_blank(),
+                   axis.title = element_blank(), 
+                   panel.grid = element_blank())
+
+plot(ggp)
+
+
+##############
+# BAR CHARTS #
+##############
+
 ##### Graphs of Lowest Debt, Debt for Highest Tuition
 library(data.table)
 
