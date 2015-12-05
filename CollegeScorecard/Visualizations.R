@@ -214,5 +214,5 @@ ggplot(highcost, aes(x=title, y=y_debt)) +
   theme(axis.text.y = element_text(hjust=0, color="black"), axis.text.x=element_blank()) +
   xlab("") + ylab("") +
   coord_flip() +
-  ggtitle("Average Debt for Most Expensive Colleges")
+  ggtitle("Median Debt for Most Expensive Colleges")
 
